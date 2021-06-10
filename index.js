@@ -11,8 +11,10 @@ app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
 // Conexión data base
-const url = 'mongodb://192.168.1.92:27017/testBD'
-mongoose.connect(url, { useNewUrlParser: true })
+/* const url = `mongodb://${process.env.USER}:${process.env.PASSWORD}@192.168.1.92:27017/test` */
+/*const url = `mongodb+srv://prueba-back:prueba@cluster0.mgx44.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`*/
+const url = `mongodb://192.168.1.92:27017/testBD` 
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (err) => console.error(err))
 
 const db = mongoose.connection
 db.once('open', _ => {
