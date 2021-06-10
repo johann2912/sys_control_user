@@ -25,9 +25,13 @@ db.on('error', err => {
 
 // import routes
 const authRoutes = require('./routes/auth');
+const validateToken = require('./routes/validate-token');
+const activo = require('./routes/admin');
+
 
 // route middlewares
 app.use('/users', authRoutes);
+app.use('/users/:id/active', validateToken, activo);
 
 app.get('/', (req, res) => {
     res.json({

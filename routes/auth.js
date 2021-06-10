@@ -31,13 +31,12 @@ router.post('/login', async (req, res) => {
         id: user._id
     }, process.env.TOKEN_SECRET)
 
-    res.json({
+    res.header('auth-token', token).json({
         error: null,
-        mensaje: "Bienvenido",
-        token: token
+        data: {token}
     })
-
 })
+
 
 
 router.post('/register', async (req, res) => {
