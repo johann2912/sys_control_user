@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyparser = require('body-parser');
+
 require('dotenv').config()
 
 const app = express();
@@ -10,11 +11,17 @@ app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
 // Conexión data base
-const uri = `mongodb+srv://${process.env.USER}:${process.env.PASSWORD}@cluster0.ncdk5.mongodb.net/${process.env.DBNAME}?retryWrites=true&w=majority`;
-const option = { useNewUrlParser: true, useUnifiedTopology: true }
-mongoose.connect(uri, option)
-.then(() => console.log('Base de datos conectada'))
-.catch(e => console.log('error db:', e))
+const url = 'mongodb://192.168.1.92:27017/testBD'
+mongoose.connect(url, { useNewUrlParser: true })
+
+const db = mongoose.connection
+db.once('open', _ => {
+    console.log(`Database connected: ${url}`)
+})
+
+db.on('error', err => {
+    console.error(`connection error: ${err}`)
+})
 
 // import routes
 const authRoutes = require('./routes/auth');
