@@ -64,7 +64,6 @@ router.post('/register', async (req, res) => {
     const user = new User({
         name: req.body.name,
         email: req.body.email,
-        status: 'sin autenticar',
         password: password
     });
 
@@ -78,5 +77,17 @@ router.post('/register', async (req, res) => {
         res.status(400).json({error})
     }
 })
+
+
+router.delete('/:id', async (req, res) => {
+    const user = await User.findOne({ email: req.params.id });
+    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
+    let respuesta = await User.deleteOne({ _id: user._id });
+    res.status(200).send(`Ususario eliminado con exito ${respuesta}`)
+})
+
+
+
+
 
 module.exports = router;
