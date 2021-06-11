@@ -31,8 +31,7 @@ const activo = require('./routes/admin');
 
 // route middlewares
 app.use('/users', authRoutes);
-app.use('/users/:id/active', validateToken, activo);
-
+app.use('/users/admin', validateToken, activo);
 app.get('/', (req, res) => {
     res.json({
         estado: true,

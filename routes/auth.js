@@ -15,7 +15,7 @@ const schemaLogin = Joi.object({
     password: Joi.string().min(6).max(1024).required()
 })
 
-router.post('/login', async (req, res) => {
+router.post('/authorization', async (req, res) => {
     // validaciones
     const { error } = schemaLogin.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message })
@@ -53,7 +53,7 @@ router.post('/register', async (req, res) => {
     const isEmailExist = await User.findOne({ email: req.body.email });
     if (isEmailExist) {
         return res.status(400).json(
-            {error: 'Email ya registrado'}
+            {error: 'El usuario ya se  encuentra registrado'}
         )
     }
 
@@ -64,6 +64,7 @@ router.post('/register', async (req, res) => {
     const user = new User({
         name: req.body.name,
         email: req.body.email,
+        status: 'sin autenticar',
         password: password
     });
 
