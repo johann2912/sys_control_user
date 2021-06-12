@@ -9,7 +9,7 @@ const verifyToken = (req, res, next) => {
         req.user = verified
         next() // continuamos
     } catch (error) {
-        res.status(400).json({error: 'token no es válido'})
+        res.status(400).json({error: 'el token no es válido'})
     }
 }
 

@@ -3,7 +3,9 @@ const User = require('../models/User');
 const Joi = require('@hapi/joi');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+//const APININJA = require('../const/Api');
 const mqtt = require('mqtt');
+
 
 
 const schemaRegister = Joi.object({
@@ -99,32 +101,40 @@ router.put('/:id', async function(req, res, next) {
     
 })
 
-/************************************** mqtt *********************************** 
-const random = async function  () {
-    let log = await DATO_CURIOSO.get("fact");
-    setDescription(log.data.fact)
-    return await DATO_CURIOSO.get("fact");
-} 
+/*
+// API
+const random = async function () {
+    let log = await APININJA;
+    return log;
+    //let log = await APININJA.get("breeds");
+    //setDescription(log.data.breeds)
+    //return await APININJA.get("breeds")
+console.log(random());
+}
+*/
 
 
+
+//************************************* mqtt ************************************
 var client = mqtt.connect('mqtt://mqtt.lyaelectronic.com:1883', {
     username: '',
     password: ''
   });
+  console.log(client);
 
-    let infoUser = await User.findOne({ email: req.params.id });
-    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
-  client.on('connect', function() { // When connected
-      console.log("Connected to CloudMQTT");
-    // Subscribe to the temperature
-    client.subscribe('Motion', function() {
-      // When a message arrives, do something with it
-      client.on('message', function(topic, client, packet) {
-        // ** Need to pass message out **
-      });
-    });
+  client.on('connect', function () {
+    client.subscribe('presence', function (err) {
+      if (!err) {
+        client.publish('presence', 'Hello mqtt')
+      }
+    })
+  })
   
-  });
-*/
+  client.on('message', function (topic, message) {
+    // message is Buffer
+    console.log(message.toString())
+    client.end()
+  })
+    
 
 module.exports = router;
