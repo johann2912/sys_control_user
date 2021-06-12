@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mqtt = require('mqtt');
 
-const api = require('../models/api');
 
 const schemaRegister = Joi.object({
     name: Joi.string().min(6).max(255).required(),
@@ -21,7 +20,7 @@ const schemaLogin = Joi.object({
 router.post('/authorization', async (req, res) => {
     // validaciones
     const { error } = schemaLogin.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details[0].message })
+    if (error) return res.status(400).json({ error: error.details[0].message });
     
     const user = await User.findOne({ email: req.body.email });
     if (!user) return res.status(400).json({ error: 'Email no encontrado' });
@@ -37,8 +36,8 @@ router.post('/authorization', async (req, res) => {
     res.header('auth-token', token).json({
         error: null,
         data: {token}
-    })
-})
+    });
+});
 
 
 
@@ -75,9 +74,9 @@ router.post('/register', async (req, res) => {
         res.json({
             error: null,
             data: savedUser
-        })
+        });
     } catch (error) {
-        res.status(400).json({error})
+        res.status(400).json({error});
     }
 })
 
@@ -86,17 +85,18 @@ router.delete('/:id', async (req, res) => {
     const user = await User.findOne({ email: req.params.id });
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
     let respuesta = await User.deleteOne({ _id: user._id });
-    res.status(200).send(`Ususario eliminado con exito ${respuesta}`)
+    res.status(200).send('Ususario eliminado con exito');
 })
 
-/*
-router.put('/:id', async (req, res) => {
-    const user = await User.findOne({ email: req.params.id });
-    if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
-    console.log(user);
+router.put('/:id', async function(req, res, next) {
 
-   
-
+    if(req.body.password){
+        const salt = await bcrypt.genSalt(10);
+        req.body.password = await bcrypt.hash(req.body.password, salt);
+    }
+    let respuesta = await User.updateOne({_id: req.params.id}, req.body)
+    res.status(200).send('Usuario modificado con exito');
+    
 })
 
 /************************************** mqtt *********************************** 
