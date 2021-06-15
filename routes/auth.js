@@ -3,8 +3,9 @@ const User = require('../models/User');
 const Joi = require('@hapi/joi');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-//const APININJA = require('../const/Api');
+const axios = require('axios')
 const mqtt = require('mqtt');
+const { Types } = require('mongoose');
 
 
 
@@ -19,6 +20,7 @@ const schemaLogin = Joi.object({
     password: Joi.string().min(6).max(1024).required()
 })
 
+// autenticar
 router.post('/authorization', async (req, res) => {
     // validaciones
     const { error } = schemaLogin.validate(req.body);
@@ -42,7 +44,7 @@ router.post('/authorization', async (req, res) => {
 });
 
 
-
+// registrar
 router.post('/register', async (req, res) => {
 
     // Validation user
@@ -82,14 +84,16 @@ router.post('/register', async (req, res) => {
     }
 })
 
-
+// eliminar
 router.delete('/:id', async (req, res) => {
-    const user = await User.findOne({ email: req.params.id });
+    console.log(req.params.id)
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
     let respuesta = await User.deleteOne({ _id: user._id });
     res.status(200).send('Ususario eliminado con exito');
 })
 
+// editar 
 router.put('/:id', async function(req, res, next) {
 
     if(req.body.password){
@@ -101,40 +105,35 @@ router.put('/:id', async function(req, res, next) {
     
 })
 
-/*
-// API
-const random = async function () {
-    let log = await APININJA;
-    return log;
-    //let log = await APININJA.get("breeds");
-    //setDescription(log.data.breeds)
-    //return await APININJA.get("breeds")
-console.log(random());
-}
-*/
 
-
-
-//************************************* mqtt ************************************
-var client = mqtt.connect('mqtt://mqtt.lyaelectronic.com:1883', {
-    username: '',
-    password: ''
-  });
-  console.log(client);
-
-  client.on('connect', function () {
-    client.subscribe('presence', function (err) {
-      if (!err) {
-        client.publish('presence', 'Hello mqtt')
-      }
-    })
-  })
-  
-  client.on('message', function (topic, message) {
-    // message is Buffer
-    console.log(message.toString())
-    client.end()
-  })
+router.post('/messages/send', async (req, res) => { 
     
+    // Api
+    async function getApi() 
+        {
+        let response = await axios.get('https://catfact.ninja/fact?limit=1&max_length=140');
+        return response.data;
+        }
+    const response = await getApi()
+    console.log(response)
+        
+    // id User
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) return res.status(400).json({ error: 'Email no encontrado' });
+    res.status(200).send('El usuario esta siendo escuchado');
 
+    console.log(user._id)
+
+    // Conexión MQTT
+        var client = mqtt.connect('mqtt://mqtt.lyaelectronic.com');
+      
+        client.on('connect', function () {
+          client.subscribe('lyatest/codigo_prueba', function (err) {
+            if (!err) {
+              client.publish('lyatest/codigo_prueba', `frase curiosa: ${JSON.stringify(response)}, el Id del usuario es: ${user._id}`)
+            }
+          })
+        }) 
+})
+     
 module.exports = router;
