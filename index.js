@@ -10,6 +10,7 @@ const app = express();
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
+
 // Conexión data base
 const url = `mongodb://192.168.1.92:27017/test` 
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (err) => console.error(err))
@@ -31,13 +32,8 @@ const activo = require('./routes/admin');
 
 // route middlewares
 app.use('/users', authRoutes);
-app.use('/users/admin', validateToken, activo);
-app.get('/', (req, res) => {
-    res.json({
-        estado: true,
-        mensaje: 'funciona!'
-    })
-});
+
+//app.use('/users/admin', validateToken, activo);
 
 // running server
 const PORT = process.env.PORT || 3001;

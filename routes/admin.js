@@ -1,6 +1,7 @@
+/*
 const router = require('./auth');
 
-const route = require('express').Router();
+const express = require('express').Router();
 
 router.get('/activo', (req, res) => {
     res.json({
@@ -13,3 +14,4 @@ router.get('/activo', (req, res) => {
 });
 
 module.exports = router;
+*/

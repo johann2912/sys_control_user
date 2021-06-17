@@ -6,32 +6,61 @@ const jwt = require('jsonwebtoken');
 const axios = require('axios')
 const mqtt = require('mqtt');
 const { Types } = require('mongoose');
-
+const verifyToken = require('./validate-token');
+const { text } = require('body-parser');
 
 
 const schemaRegister = Joi.object({
-    name: Joi.string().min(6).max(255).required(),
-    email: Joi.string().min(6).max(255).required().email(),
-    password: Joi.string().min(6).max(1024).required()
+    name: Joi.string().min(3).max(255).required(),
+    email: Joi.string().min(3).max(255).required().email(),
+    password: Joi.string().min(3).max(1024).required()
 })
 
 const schemaLogin = Joi.object({
-    email: Joi.string().min(6).max(255).required().email(),
-    password: Joi.string().min(6).max(1024).required()
+    email: Joi.string().min(3).max(255).required().email(),
+    password: Joi.string().min(3).max(1024).required()
 })
 
 // autenticar
-router.post('/authorization', async (req, res) => {
+function ensureToken(req, res, next) {
+    const bearerHeader = req.headers['authorization'];
+    console.log(bearerHeader);
+    if (typeof bearerHeader !== 'undefined') {
+        const bearer = bearerHeader.split(" ");
+        const bearerToken = bearer[1];
+        req.token = bearerToken;
+        next();
+    } else {
+        res.sendStatus(403);
+    }
+}
+
+router.post('/verificacion', ensureToken, (req, res) => {
+    jwt.verify(req.token, process.env.TOKEN_SECRET, (err, data) => {
+        if (err) {
+            res.sendStatus(403)
+        } else {
+            res.json({
+                text: 'verificacion realizada, usuario activo',
+                data
+            })
+        }
+    })
+})
+
+router.post('/authorization', ensureToken, async (req, res) => {
     // validaciones
     const { error } = schemaLogin.validate(req.body);
     if (error) return res.status(400).json({ error: error.details[0].message });
     
+
     const user = await User.findOne({ email: req.body.email });
-    if (!user) return res.status(400).json({ error: 'Email no encontrado' });
+    if (!user) return res.status(400).json({ error: 'Credenciales no validas' });
 
     const validPassword = await bcrypt.compare(req.body.password, user.password);
-    if (!validPassword) return res.status(400).json({ error: 'Contraseña no válida' })
+    if (!validPassword) return res.status(400).json({ error: 'Credenciales no validas' })
     
+    /*
     const token = jwt.sign({
         name: user.name,
         id: user._id
@@ -41,7 +70,10 @@ router.post('/authorization', async (req, res) => {
         error: null,
         data: {token}
     });
+    */
 });
+
+
 
 
 // registrar
@@ -73,6 +105,10 @@ router.post('/register', async (req, res) => {
         password: password
     });
 
+    console.log("User: ", user)
+    const token = jwt.sign({user}, process.env.TOKEN_SECRET);
+    res.json({token});
+
     try {
         const savedUser = await user.save();
         res.json({
@@ -85,7 +121,7 @@ router.post('/register', async (req, res) => {
 })
 
 // eliminar
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', ensureToken, async (req, res) => {
     console.log(req.params.id)
     const user = await User.findById(req.params.id);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
@@ -94,7 +130,7 @@ router.delete('/:id', async (req, res) => {
 })
 
 // editar 
-router.put('/:id', async function(req, res, next) {
+router.put('/:id', ensureToken, async function(req, res, next) {
 
     if(req.body.password){
         const salt = await bcrypt.genSalt(10);
@@ -106,13 +142,13 @@ router.put('/:id', async function(req, res, next) {
 })
 
 
-router.post('/messages/send', async (req, res) => { 
+router.post('/messages/send', ensureToken, async (req, res) => { 
     
     // Api
     async function getApi() 
         {
         let response = await axios.get('https://catfact.ninja/fact?limit=1&max_length=140');
-        return response.data;
+        return JSON.stringify(response.data);
         }
     const response = await getApi()
     console.log(response)
@@ -122,7 +158,7 @@ router.post('/messages/send', async (req, res) => {
     if (!user) return res.status(400).json({ error: 'Email no encontrado' });
     res.status(200).send('El usuario esta siendo escuchado');
 
-    console.log(user._id)
+    console.log(user._id)  
 
     // Conexión MQTT
         var client = mqtt.connect('mqtt://mqtt.lyaelectronic.com');
