@@ -45,8 +45,6 @@ const Comparar = async (req)  => {
     return message
 }
 
-
-
 // registrar
 router.post('/register', async (req, res) => {
 
@@ -120,7 +118,7 @@ router.post('/verificacion', ensureToken, (req, res) => {
     })
 })
 
-// eliminar Token
+// eliminar validacion del Token
 router.delete('/verificacion/:id', ensureToken, async (req, res) => {
     if(req.message == 0){
         res.status(400).send('Token invalido')
@@ -133,7 +131,6 @@ router.delete('/verificacion/:id', ensureToken, async (req, res) => {
         res.status(200).send('Token eliminado con exito')
     }
 })
-
 
 // eliminar Usuario
 router.delete('/:id', ensureToken, async (req, res) => {
