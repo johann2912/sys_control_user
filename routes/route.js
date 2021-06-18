@@ -23,6 +23,7 @@ const ensureToken = async (req, res, next) => {
     }
 }
 
+// Verificar Token
 const Comparar = async (req)  => {
     let validate = []
     if(req.params.id){
@@ -81,7 +82,7 @@ router.post('/register', async (req, res) => {
         password: password
     });
 
-    console.log("User: ", user)
+    //console.log("User: ", user)
     // crear token 
     const token = jwt.sign({user}, process.env.TOKEN_SECRET);
     const confirmacion = await validateToken.create({
@@ -119,16 +120,30 @@ router.post('/verificacion', ensureToken, (req, res) => {
     })
 })
 
+// eliminar Token
+router.delete('/verificacion/:id', ensureToken, async (req, res) => {
+    if(req.message == 0){
+        res.status(400).send('Token invalido')
+    } else {
+        const buscando = await validateToken.findOne({id: req.params.id})
+        console.log(buscando)
+        if(buscando.length == 0) return res.status(400).json({ error: 'Token no encontrado'})
+        let lalala = await validateToken.deleteOne({ _id: buscando._id })
+        console.log(lalala)
+        res.status(200).send('Token eliminado con exito')
+    }
+})
 
-// eliminar
+
+// eliminar Usuario
 router.delete('/:id', ensureToken, async (req, res) => {
     if(req.message == 0){
         res.status(400).send('Token invalido');
     } else {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(400).json({ error: 'Usuario no encontrado' });
-    let respuesta = await User.deleteOne({ _id: user._id });
-    res.status(200).send('Ususario eliminado con exito');
+        await User.deleteOne({ _id: user._id });
+        res.status(200).send('Ususario eliminado con exito');
     }
 })
 
@@ -148,7 +163,7 @@ router.put('/:id', ensureToken, async function(req, res, next) {
 
 // MQTT
 router.post('/messages/send', ensureToken, async (req, res) => { 
-    console.log(req.message)
+    //console.log(req.message)
     if(req.message == 0){
         res.status(400).send('Credenciales Invalidas');
     } else {
@@ -159,14 +174,14 @@ router.post('/messages/send', ensureToken, async (req, res) => {
             return JSON.stringify(response.data.fact);
             }
         const response = await getApi()
-        console.log(response)
+        //console.log(response)
             
         // id User
         const user = await User.findOne({ email: req.body.email });
         if (!user) return res.status(400).json({ error: 'Email no encontrado' });
         res.status(200).send('El usuario esta siendo escuchado');
         const id = user._id
-        console.log(id)  
+        //console.log(id)  
 
 
         // Conexión MQTT
