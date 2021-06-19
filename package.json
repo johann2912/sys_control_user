@@ -19,6 +19,7 @@
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.8",
+    "type": "module",
     "mongoose": "^5.12.13",
     "mqtt": "^4.2.6"
   }
