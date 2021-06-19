@@ -1,14 +1,11 @@
-const router = require('express').Router();
 const User = require('../models/User');
-const validateToken = require('../models/tableToken');
 const Joi = require('@hapi/joi');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const axios = require('axios')
-const mqtt = require('mqtt');
+const router = require('express').Router();
+const validateToken = require('../models/tableToken');
 
-const { ensureToken } = require('../controllers/autorizacionToken');
-
+const { ensureToken } = require('../middlewares/autorizacionToken');
 
 // registrar
 router.post('/register', async (req, res) => {
@@ -67,36 +64,6 @@ router.post('/register', async (req, res) => {
     }
 })
 
-// Verificar Token
-router.post('/verificacion', ensureToken, (req, res) => {
-    jwt.verify(req.token, process.env.TOKEN_SECRET, (err, data) => {
-        if (err) {
-            res.json({
-                message: 'Ha ocurrido un error'
-            })
-        } else {
-            res.json({
-                text: 'verificacion realizada, usuario activo',
-                data
-            })
-        }
-    })
-})
-
-// eliminar validacion del Token
-router.delete('/verificacion/:id', ensureToken, async (req, res) => {
-    if(req.message == 0){
-        res.status(400).send('Token invalido')
-    } else {
-        const buscando = await validateToken.findOne({id: req.params.id})
-        console.log(buscando)
-        if(buscando.length == 0) return res.status(400).json({ error: 'Token no encontrado'})
-        let lalala = await validateToken.deleteOne({ _id: buscando._id })
-        console.log(lalala)
-        res.status(200).send('Token eliminado con exito')
-    }
-})
-
 // eliminar Usuario
 router.delete('/:id', ensureToken, async (req, res) => {
     if(req.message == 0){
@@ -123,40 +90,5 @@ router.put('/:id', ensureToken, async function(req, res, next) {
     }
 })
 
-// MQTT
-router.post('/messages/send', ensureToken, async (req, res) => { 
-    //console.log(req.message)
-    if(req.message == 0){
-        res.status(400).send('Credenciales Invalidas');
-    } else {
-        // Api
-        async function getApi() 
-            {
-            let response = await axios.get('https://catfact.ninja/fact?limit=1&max_length=140');
-            return JSON.stringify(response.data.fact);
-            }
-        const response = await getApi()
-        //console.log(response)
-            
-        // id User
-        const user = await User.findOne({ email: req.body.email });
-        if (!user) return res.status(400).json({ error: 'Email no encontrado' });
-        res.status(200).send('El usuario esta siendo escuchado');
-        const id = user._id
-        //console.log(id)  
-
-
-        // Conexión MQTT
-            var client = mqtt.connect('mqtt://mqtt.lyaelectronic.com');
-        
-            client.on('connect', function () {
-            client.subscribe('lyatest/codigo_prueba', function (err) {
-                if (!err) {
-                client.publish('lyatest/codigo_prueba', `Frase Curiosa:${response} Id:${id}`)
-                }
-            })
-            }) 
-    }
-})
      
 module.exports = router;

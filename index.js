@@ -9,11 +9,14 @@ app.use(express.json());
 
 
 // import routes
-const url = require('./routes/route');
-
+const user = require('./controllers/user');
+const token = require('./controllers/token');
+const mqtt = require('./controllers/mqtt');
 
 // route middlewares
-app.use('/users', url);
+app.use('/users', user);
+app.use('/token', token);
+app.use('/mqtt', mqtt);
 
 
 // running server
