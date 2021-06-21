@@ -24,18 +24,16 @@ router.post('/messages/send', ensureToken, async (req, res) => {
         if (!user) return res.status(400).json({ error: 'Email no encontrado' });
         res.status(200).send('El usuario esta siendo escuchado');
         const id = user._id
-        //console.log(id)  
-
 
         // Conexión MQTT
             var client = mqtt.connect('mqtt://mqtt.lyaelectronic.com');
         
             client.on('connect', function () {
-            client.subscribe('lyatest/codigo_prueba', function (err) {
-                if (!err) {
-                client.publish('lyatest/codigo_prueba', `Frase Curiosa:${response} Id:${id}`)
-                }
-            })
+                client.subscribe('lyatest/codigo_prueba', function (err) {
+                    if (!err) {
+                    client.publish('lyatest/codigo_prueba', `Frase:${response} Id:${id}`)
+                    }
+                })
             }) 
     }
 })

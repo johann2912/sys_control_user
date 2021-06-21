@@ -11,11 +11,13 @@ app.use(express.json());
 // import routes
 const user = require('./controllers/user');
 const token = require('./controllers/token');
+const singup = require('./controllers/singup');
 const mqtt = require('./controllers/mqtt');
 
 // route middlewares
 app.use('/users', user);
 app.use('/token', token);
+app.use('/singup', singup);
 app.use('/mqtt', mqtt);
 
 

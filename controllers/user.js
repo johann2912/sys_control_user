@@ -49,7 +49,7 @@ router.post('/register', async (req, res) => {
         id: user._id,
         token: token
     })
-    console.log(confirmacion);
+    //console.log(confirmacion);
 
     res.json({user, token});
 
