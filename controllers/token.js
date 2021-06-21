@@ -26,10 +26,10 @@ router.delete('/verificacion/:id', ensureToken, async (req, res) => {
         res.status(400).send('Token invalido')
     } else {
         const buscando = await validateToken.findOne({id: req.params.id})
-        console.log(buscando)
+        //console.log(buscando)
         if(buscando.length == 0) return res.status(400).json({ error: 'Token no encontrado'})
         let lalala = await validateToken.deleteOne({ _id: buscando._id })
-        console.log(lalala)
+        //console.log(lalala)
         res.status(200).send('Token eliminado con exito')
     }
 })
